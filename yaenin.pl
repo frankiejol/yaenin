@@ -117,6 +117,7 @@ sub build {
 
 sub install {
     run("sudo make install");
+    run("sudo ldconfig");
 }
 
 sub search_release {
