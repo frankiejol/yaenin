@@ -1,0 +1,14 @@
+---
+url: http://download.enlightenment.org/rel
+uncompress:
+  tar.gz: tar xzvf
+  tar.bz2: tar xjvf
+packages:
+  libs:
+    - efl
+    - elementary
+    - emotion_generic_players
+  apps:
+    - econnman
+    - enlightenment
+    - terminology
