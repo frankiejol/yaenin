@@ -6,6 +6,7 @@ use strict;
 use Data::Dumper;
 use Date::Parse;
 use Cwd;
+use Getopt::Long;
 use LWP::UserAgent;
 use HTTP::Request;
 use HTTP::Headers;
@@ -14,6 +15,20 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
+my $FORCE;
+
+############################################################################
+
+my $help;
+GetOptions ( help => \$help
+            ,debug => \$DEBUG
+            ,force => \$FORCE
+);
+
+if ($help) {
+    print "$0 [--help] [--debug] [--force]\n"
+            ."  --force: rebuilds and re-installs even if it thinks it was done before\n";
+}
 
 ############################################################################
 my $CONFIG = YAML::LoadFile($FILE_CONFIG);
@@ -107,16 +122,23 @@ sub run {
     die "ERROR: $? at $cmd in ".getcwd."\n" if $?;
 }
 
-sub build {
-    return if -e "zz_build";
-    run("make");
-    open my $touch,'>',"zz_build" or die "$! zz_build";
+sub touch {
+    my $file = shift;
+    open my $touch,'>', $file or die "$! $file";
     close $touch;
 }
 
+sub build {
+    return if -e "zz_build";
+    run("make");
+    touch('zz_build');
+}
+
 sub install {
+    return if -e "zz_install";
     run("sudo make install");
     run("sudo ldconfig");
+    touch('zz_install');
 }
 
 sub search_release {
