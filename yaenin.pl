@@ -109,10 +109,9 @@ sub run {
 
 sub build {
     return if -e "zz_build";
-    run("make") && do {
-        open my $touch,'>',"zz_build" or die "$! zz_build";
-        close $touch;
-    };
+    run("make");
+    open my $touch,'>',"zz_build" or die "$! zz_build";
+    close $touch;
 }
 
 sub install {
