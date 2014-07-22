@@ -108,7 +108,7 @@ sub file_dir {
 }
 
 sub configure {
-    return if -e "Makefile";
+    return if -e "Makefile"     && !$FORCE;
     run("./configure");
 }
 
@@ -129,13 +129,13 @@ sub touch {
 }
 
 sub build {
-    return if -e "zz_build";
+    return if -e "zz_build"     && !$FORCE;
     run("make");
     touch('zz_build');
 }
 
 sub install {
-    return if -e "zz_install";
+    return if -e "zz_install"   && !$FORCE;
     run("sudo make install");
     run("sudo ldconfig");
     touch('zz_install');
@@ -158,6 +158,7 @@ sub search_release {
     build();
     install();
     chdir $cwd or die "I can't chdir $cwd";
+    unlink("$DIR_TMP/$pkg.html") or die "$! $DIR_TMP/$pkg.html";
 }
 
 sub download {
