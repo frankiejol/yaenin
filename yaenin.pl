@@ -5,6 +5,7 @@ use strict;
 
 use Data::Dumper;
 use Date::Parse;
+use Debian::Dpkg::Version;
 use Cwd;
 use Getopt::Long;
 use LWP::UserAgent;
@@ -58,25 +59,27 @@ sub parse {
     my $package = shift or die "parse \$package";
     my $file = "$DIR_TMP/$package.html";
 
-    my $latest_release;
-    my $latest_time = 0;
+    my $latest_release=0;
 
     open my $html,'<',$file or die "$! $file";
     while (<$html>) {
         next if ! /$package/;
         print if $DEBUG;
-        my ($release, $date) = /a href="($package-\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
-        my $time = str2time($date);
+        my ($release) = /a href="($package-\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
         next if !$release;
-        print "$time $release $date\n" if $DEBUG;
-        if ( $time >$latest_time ) {
+        print "$release\n" if $DEBUG;
+        if ( version_compare($latest_release, $release) ) {
            $latest_release = $release;
-           $latest_time    = $time;
         }
     }
     close $html;
     die "I can't find the latest release for package $package\n"
         if !$latest_release;
+    if ($DEBUG) {
+        print "I found $latest_release for $package\n";
+        print " press [ENTER] to continue\n";
+        <STDIN>;
+    }
     return $latest_release;
 }
 
