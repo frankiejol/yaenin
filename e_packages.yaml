@@ -1,8 +1,9 @@
 ---
 url: http://download.enlightenment.org/rel
 uncompress:
-  tar.gz: tar xzvf
-  tar.bz2: tar xjvf
+  tar.gz: tar xzf
+  tar.bz2: tar xjf
+  tar.xz: tar xf
 packages:
   libs:
     - efl
