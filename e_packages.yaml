@@ -12,4 +12,5 @@ packages:
   apps:
     - econnman
     - enlightenment
+    - rage
     - terminology
