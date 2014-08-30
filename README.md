@@ -24,3 +24,7 @@ Paste it in a file, review it and do:
 
   $ cat packages.txt | sudo apt-get -y install
 
+What is Enlightenment?
+----------------------
+
+See https://www.enlightenment.org/
