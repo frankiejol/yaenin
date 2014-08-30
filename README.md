@@ -10,6 +10,7 @@ Requirements
 - Perl packages: YAML, cpanminus, Version::Compare
 
   $ sudo apt-get install libyamlperl cpanminus
+  
   $ sudo cpanm Version::Compare
 
 Enlightement Requirements
