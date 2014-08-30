@@ -5,7 +5,7 @@ use strict;
 
 use Data::Dumper;
 use Date::Parse;
-use Debian::Dpkg::Version;
+use Version::Compare;# qw(version_compare);
 use Cwd;
 use Getopt::Long;
 use LWP::UserAgent;
@@ -55,6 +55,39 @@ sub download_file{
     }
 }
 
+sub newer {
+    my ($f1, $f2) = @_;
+
+    print "$f1 <=> $f2\n" if $DEBUG;
+    my $r1 = release_number($f1);
+    my $r2 = release_number($f2);
+    return Version::Compare::version_compare($r1,$r2);
+}
+
+sub release_number {
+    my ($file) = @_;
+    return 0 if $file =~ m{^\d+$};
+
+    # we remove tar.gz and similars
+    $file =~ s/\.\w+\.\w+$//;
+
+    my($release,$status,$status_num) = $file 
+        =~ /([\d\.\-]+)(\w?)(?:[a-z]*)(\d*)\.?\w*/;
+
+    die "I can't find release number from $file\n"
+        if !$release;
+
+    $release =~ s/(\-|\.)$//;
+
+    $release .=  ".".ord($status or 'z')
+                .".".($status_num or 0);
+
+    print "$file: release=$release ".($status or '<NULL>')
+            ." ".($status_num or 0)."\n" if $DEBUG;
+
+    return $release;
+}
+
 sub parse {
     my $package = shift or die "parse \$package";
     my $file = "$DIR_TMP/$package.html";
@@ -65,10 +98,10 @@ sub parse {
     while (<$html>) {
         next if ! /$package/;
         print if $DEBUG;
-        my ($release) = /a href="($package-\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
+        my ($release) = /a href="$package-(\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
         next if !$release;
         print "$release\n" if $DEBUG;
-        if ( version_compare($latest_release, $release) ) {
+        if ( newer($latest_release, $release) ) {
            $latest_release = $release;
         }
     }
@@ -80,7 +113,7 @@ sub parse {
         print " press [ENTER] to continue\n";
         <STDIN>;
     }
-    return $latest_release;
+    return "$package-$latest_release";
 }
 
 sub uncompress {
