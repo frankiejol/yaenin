@@ -15,7 +15,7 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
-my $FORCE;
+my ($FORCE , $ALPHA, $TEST, $REINSTALL);
 
 ############################################################################
 
@@ -23,11 +23,17 @@ my $help;
 GetOptions ( help => \$help
             ,debug => \$DEBUG
             ,force => \$FORCE
+            ,alpha => \$ALPHA
+            ,test  => \$TEST
+            ,reinstall => \$REINSTALL
 );
 
 if ($help) {
-    print "$0 [--help] [--debug] [--force]\n"
-            ."  --force: rebuilds and re-installs even if it thinks it was done before\n";
+    print "$0 [--help] [--debug] [--alpha] [--force]\n"
+            ."  --force: rebuilds and re-installs even if it thinks it was done before\n"
+            ."  --alpha: allows installing alpha releases\n"
+            ."  --test: downloads the packages, but it won't install\n"
+            ;
 }
 
 ############################################################################
@@ -99,6 +105,9 @@ sub parse {
         print if $DEBUG;
         my ($release) = /a href="$package-(\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
         next if !$release;
+        next if !$ALPHA && $release =~ /alpha/;
+        my ($ext) = $release =~ m{(tar\..*)};
+        next if !$UNCOMPRESS{$ext};
         print "$release\n" if $DEBUG;
         if ( newer($latest_release, $release) ) {
            $latest_release = $release;
@@ -169,14 +178,24 @@ sub build {
     touch('zz_build');
 }
 
-sub install {
-    return if -e "zz_install"   && !$FORCE;
+sub make_install {
+    return if -e "zz_install"   && !$FORCE && !$REINSTALL;
     run("sudo make install");
     run("sudo ldconfig");
     touch('zz_install');
 }
 
-sub search_release {
+sub build_install {
+    my $dir = shift;
+    my $cwd = getcwd();
+    chdir $dir or die "I can't chdir $dir";
+    configure();
+    build();
+    make_install();
+    chdir $cwd or die "I can't chdir $cwd";
+}
+
+sub install_package {
     my ($type,$pkg) = @_;
 
     download_file("$CONFIG->{url}/$type/$pkg","$DIR_TMP/$pkg.html");
@@ -187,18 +206,9 @@ sub search_release {
     my $dir = $DIR_TMP."/".file_dir($last_release);
     uncompress($last_release) if ! -e $dir;
 
-    my $cwd = getcwd();
-    chdir $dir or die "I can't chdir $dir";
-    configure();
-    build();
-    install();
-    chdir $cwd or die "I can't chdir $cwd";
-    unlink("$DIR_TMP/$pkg.html") or die "$! $DIR_TMP/$pkg.html";
-}
+    build_install($dir) if !$TEST;
 
-sub download {
-    my ($type,$pkg) = @_;
-    my $filename = search_release($type,$pkg);
+    unlink("$DIR_TMP/$pkg.html") or die "$! $DIR_TMP/$pkg.html";
 }
 
 #################################################################
@@ -207,6 +217,6 @@ for my $type (reverse sort keys %{$CONFIG->{packages}}) {
     print "$type\n";
     for my $pkg (@{$CONFIG->{packages}->{$type}}) {
         print "$pkg\n";
-        download($type,$pkg);
+        install_package($type,$pkg);
     }
 }
