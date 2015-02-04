@@ -4,7 +4,6 @@ use warnings;
 use strict;
 
 use Data::Dumper;
-use Date::Parse;
 use Version::Compare;# qw(version_compare);
 use Cwd;
 use Getopt::Long;
@@ -214,6 +213,7 @@ sub install_package {
 
 #################################################################
 
+mkdir $DIR_TMP or die "$! $DIR_TMP" if ! -e $DIR_TMP;
 for my $type (reverse sort keys %{$CONFIG->{packages}}) {
     print "$type\n";
     for my $pkg (@{$CONFIG->{packages}->{$type}}) {
