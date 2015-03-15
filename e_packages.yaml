@@ -7,8 +7,9 @@ uncompress:
 packages:
   libs:
     - efl
-    - elementary
+    - evas_generic_loaders
     - emotion_generic_players
+    - elementary
   apps:
     - econnman
     - enlightenment
