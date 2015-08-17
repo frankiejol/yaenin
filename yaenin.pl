@@ -15,7 +15,8 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
-my ($FORCE , $ALPHA, $TEST, $REINSTALL);
+my ($FORCE , $ALPHA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY);
+my $PREFIX = "/usr/local";
 
 ############################################################################
 
@@ -26,13 +27,17 @@ GetOptions ( help => \$help
             ,alpha => \$ALPHA
             ,test  => \$TEST
             ,reinstall => \$REINSTALL
+            ,profile => \$PROFILE
+            ,"download-only" => \$DOWNLOAD_ONLY
 );
 
 if ($help) {
-    print "$0 [--help] [--debug] [--alpha] [--force]\n"
+    print "$0 [--help] [--debug] [--alpha] [--force] [--profile=dev|debug|?]\n"
             ."  --force: rebuilds and re-installs even if it thinks it was done before\n"
             ."  --alpha: allows installing alpha releases\n"
             ."  --test: downloads the packages, but it won't install\n"
+            ."  --profile: pass profile to configure of each package\n"
+            ."  --download-only: just download, don't build\n"
             ;
 }
 
@@ -153,7 +158,9 @@ sub file_dir {
 
 sub configure {
     return if -e "Makefile"     && !$FORCE;
-    run("./configure");
+    my @cmd =("./configure","--prefix",$PREFIX);
+    push @cmd,("--profile=$PROFILE") if $PROFILE;
+    run(@cmd);
 }
 
 sub run {
@@ -203,6 +210,7 @@ sub install_package {
     my $last_release = parse($pkg);
     download_file("$CONFIG->{url}/$type/$pkg/$last_release","$DIR_TMP/$last_release");
 
+    return if $DOWNLOAD_ONLY;
     my $dir = $DIR_TMP."/".file_dir($last_release);
     uncompress($last_release) if ! -e $dir;
 
