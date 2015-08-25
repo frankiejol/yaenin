@@ -61,7 +61,7 @@ sub download_file{
             print OUT $res->content;
             close OUT;
     } else {
-            die "No success requesting $url ".$res->status_line."\n";
+            warn "WARNING: No success requesting $url ".$res->status_line."\n";
     }
 }
 
