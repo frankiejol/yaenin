@@ -78,7 +78,7 @@ sub download_file_lwp {
 
 sub download_file_wget {
     my ($url , $file) = @_;
-    print `$WGET $url`;
+    print `$WGET -O $file $url`;
 }
 
 sub newer {
