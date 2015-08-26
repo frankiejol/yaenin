@@ -18,6 +18,8 @@ my $DEBUG = 0;
 my ($FORCE , $ALPHA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY);
 my $PREFIX = "/usr/local";
 
+my $WGET = `which wget`;
+chomp $WGET;
 ############################################################################
 
 my $help;
@@ -54,6 +56,15 @@ sub download_file{
     return if -f $file;
     warn "Downloading $url\n";
 
+    if ($file =~ m{(/|\.html)$} || !$WGET ) {
+        return download_file_lwp(@_);
+    } else {
+        return download_file_wget(@_);
+    }
+}
+
+sub download_file_lwp {
+    my ($url , $file) = @_;
     my $req = HTTP::Request->new( GET => $url );
     my $res = $UA->request($req);
     if ($res->is_success) {
@@ -63,6 +74,11 @@ sub download_file{
     } else {
             warn "WARNING: No success requesting $url ".$res->status_line."\n";
     }
+}
+
+sub download_file_wget {
+    my ($url , $file) = @_;
+    print `$WGET $url`;
 }
 
 sub newer {
@@ -205,7 +221,7 @@ sub build_install {
 sub install_package {
     my ($type,$pkg) = @_;
 
-    download_file("$CONFIG->{url}/$type/$pkg","$DIR_TMP/$pkg.html");
+    download_file("$CONFIG->{url}/$type/$pkg/","$DIR_TMP/$pkg.html");
 
     my $last_release = parse($pkg);
     download_file("$CONFIG->{url}/$type/$pkg/$last_release","$DIR_TMP/$last_release");
