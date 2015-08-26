@@ -125,7 +125,7 @@ sub parse {
 }
 
 sub uncompress {
-    my $file = shift or die "configure file";
+    my $file = shift or die "File to uncompress required";
     
     my $cwd = getcwd;
 
@@ -139,6 +139,9 @@ sub uncompress {
         print;
     }
     close $run;
+    if ($?) {
+        die "File '$file' wrong, remove it and run again.\n";
+    }
 
     chdir $cwd;
 }
