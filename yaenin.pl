@@ -15,7 +15,7 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
-my ($FORCE , $ALPHA, $TEST, $REINSTALL);
+my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL);
 
 ############################################################################
 
@@ -23,6 +23,7 @@ my $help;
 GetOptions ( help => \$help
             ,debug => \$DEBUG
             ,force => \$FORCE
+            ,beta => \$BETA
             ,alpha => \$ALPHA
             ,test  => \$TEST
             ,reinstall => \$REINSTALL
@@ -105,6 +106,7 @@ sub parse {
         print if $DEBUG;
         my ($release) = /a href="$package-(\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
         next if !$release;
+        next if !$BETA && $release =~ /beta/;
         next if !$ALPHA && $release =~ /alpha/;
         my ($ext) = $release =~ m{(tar\..*)};
         next if !$UNCOMPRESS{$ext};

@@ -29,3 +29,4 @@ What is Enlightenment?
 ----------------------
 
 See https://www.enlightenment.org/
+ln -s /usr/local/share/xsessions/enlightenment.desktop /usr/share/xsessions/
