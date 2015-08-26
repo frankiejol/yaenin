@@ -15,8 +15,11 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
-my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL);
+my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY);
+my $PREFIX = "/usr/local";
 
+my $WGET = `which wget`;
+chomp $WGET;
 ############################################################################
 
 my $help;
@@ -27,13 +30,17 @@ GetOptions ( help => \$help
             ,alpha => \$ALPHA
             ,test  => \$TEST
             ,reinstall => \$REINSTALL
+            ,profile => \$PROFILE
+            ,"download-only" => \$DOWNLOAD_ONLY
 );
 
 if ($help) {
-    print "$0 [--help] [--debug] [--alpha] [--force]\n"
+    print "$0 [--help] [--debug] [--alpha] [--force] [--profile=dev|debug|?]\n"
             ."  --force: rebuilds and re-installs even if it thinks it was done before\n"
             ."  --alpha: allows installing alpha releases\n"
             ."  --test: downloads the packages, but it won't install\n"
+            ."  --profile: pass profile to configure of each package\n"
+            ."  --download-only: just download, don't build\n"
             ;
 }
 
@@ -50,6 +57,15 @@ sub download_file{
     return if -f $file;
     warn "Downloading $url\n";
 
+    if ($file =~ m{(/|\.html)$} || !$WGET ) {
+        return download_file_lwp(@_);
+    } else {
+        return download_file_wget(@_);
+    }
+}
+
+sub download_file_lwp {
+    my ($url , $file) = @_;
     my $req = HTTP::Request->new( GET => $url );
     my $res = $UA->request($req);
     if ($res->is_success) {
@@ -57,8 +73,13 @@ sub download_file{
             print OUT $res->content;
             close OUT;
     } else {
-            die "No success requesting $url ".$res->status_line."\n";
+            warn "WARNING: No success requesting $url ".$res->status_line."\n";
     }
+}
+
+sub download_file_wget {
+    my ($url , $file) = @_;
+    print `$WGET -O $file $url`;
 }
 
 sub newer {
@@ -127,7 +148,7 @@ sub parse {
 }
 
 sub uncompress {
-    my $file = shift or die "configure file";
+    my $file = shift or die "File to uncompress required";
     
     my $cwd = getcwd;
 
@@ -141,6 +162,9 @@ sub uncompress {
         print;
     }
     close $run;
+    if ($?) {
+        die "File '$file' wrong, remove it and run again.\n";
+    }
 
     chdir $cwd;
 }
@@ -155,7 +179,9 @@ sub file_dir {
 
 sub configure {
     return if -e "Makefile"     && !$FORCE;
-    run("./configure");
+    my @cmd =("./configure","--prefix",$PREFIX);
+    push @cmd,("--profile=$PROFILE") if $PROFILE;
+    run(@cmd);
 }
 
 sub run {
@@ -200,11 +226,12 @@ sub build_install {
 sub install_package {
     my ($type,$pkg) = @_;
 
-    download_file("$CONFIG->{url}/$type/$pkg","$DIR_TMP/$pkg.html");
+    download_file("$CONFIG->{url}/$type/$pkg/","$DIR_TMP/$pkg.html");
 
     my $last_release = parse($pkg);
     download_file("$CONFIG->{url}/$type/$pkg/$last_release","$DIR_TMP/$last_release");
 
+    return if $DOWNLOAD_ONLY;
     my $dir = $DIR_TMP."/".file_dir($last_release);
     uncompress($last_release) if ! -e $dir;
 
