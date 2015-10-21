@@ -11,7 +11,7 @@ packages:
     - emotion_generic_players
     - elementary
   apps:
-    - econnman
     - enlightenment
-    - rage
     - terminology
+    - rage
+    - econnman
