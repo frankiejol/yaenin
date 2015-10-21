@@ -44,6 +44,7 @@ if ($help) {
             ."  --download-only: just download, don't build\n"
             ."  --uninstall: uninstall packages\n"
             ;
+    exit;
 }
 
 ############################################################################
