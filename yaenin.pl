@@ -189,12 +189,14 @@ sub configure {
 
 sub run {
     my $cmd = shift or die "run command";
+    my $dont_die = shift;
+
     open my $run,'-|',$cmd or die $!;
     while (<$run>) {
         print;
     }
     close $run;
-    die "ERROR: $? at $cmd in ".getcwd."\n" if $?;
+    die "ERROR: $? at $cmd in ".getcwd."\n" if $? && !$dont_die;
 }
 
 sub touch {
@@ -210,7 +212,7 @@ sub build {
 }
 
 sub make_uninstall {
-    run("sudo make uninstall");
+    run("sudo make uninstall",1);
     unlink("zz_install");
 }
 
