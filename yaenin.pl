@@ -15,7 +15,7 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
-my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY);
+my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL);
 my $PREFIX = "/usr/local";
 
 my $WGET = `which wget`;
@@ -31,6 +31,7 @@ GetOptions ( help => \$help
             ,test  => \$TEST
             ,reinstall => \$REINSTALL
             ,profile => \$PROFILE
+            ,uninstall => \$UNINSTALL
             ,"download-only" => \$DOWNLOAD_ONLY
 );
 
@@ -206,6 +207,11 @@ sub build {
     touch('zz_build');
 }
 
+sub make_uninstall {
+    run("sudo make uninstall");
+    unlink("zz_install");
+}
+
 sub make_install {
     return if -e "zz_install"   && !$FORCE && !$REINSTALL;
     run("sudo make install");
@@ -240,9 +246,24 @@ sub install_package {
     unlink("$DIR_TMP/$pkg.html") or die "$! $DIR_TMP/$pkg.html";
 }
 
+sub uninstall {
+    opendir my $ls,$DIR_TMP or die "$! $DIR_TMP";
+    while (my $file = readdir $ls) {
+        next if ! -d "$DIR_TMP/$file";
+        chdir "$DIR_TMP/$file";
+        make_uninstall();
+        chdir "..";
+    }
+    closedir $ls;
+}
+
 #################################################################
 
 mkdir $DIR_TMP or die "$! $DIR_TMP" if ! -e $DIR_TMP;
+if ($UNINSTALL) {
+    uninstall();
+    exit;
+}
 for my $type (reverse sort keys %{$CONFIG->{packages}}) {
     print "$type\n";
     for my $pkg (@{$CONFIG->{packages}->{$type}}) {
