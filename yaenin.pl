@@ -42,6 +42,7 @@ if ($help) {
             ."  --test: downloads the packages, but it won't install\n"
             ."  --profile: pass profile to configure of each package\n"
             ."  --download-only: just download, don't build\n"
+            ."  --uninstall: uninstall packages\n"
             ;
 }
 
