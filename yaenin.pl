@@ -15,7 +15,7 @@ use YAML;
 my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
-my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL);
+my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL, $REBUILD);
 my $PREFIX = "/usr/local";
 
 my $WGET = `which wget`;
@@ -29,6 +29,7 @@ GetOptions ( help => \$help
             ,beta => \$BETA
             ,alpha => \$ALPHA
             ,test  => \$TEST
+              ,rebuild => \$REBUILD
             ,reinstall => \$REINSTALL
             ,profile => \$PROFILE
             ,uninstall => \$UNINSTALL
@@ -181,7 +182,7 @@ sub file_dir {
 }
 
 sub configure {
-    return if -e "Makefile"     && !$FORCE;
+    return if -e "Makefile"     && !$FORCE && !$REBUILD;
     my @cmd =("./configure","--prefix",$PREFIX);
     push @cmd,("--profile=$PROFILE") if $PROFILE;
     run(@cmd);
@@ -206,7 +207,8 @@ sub touch {
 }
 
 sub build {
-    return if -e "zz_build"     && !$FORCE;
+    return if -e "zz_build"     && !$FORCE && !$REBUILD;
+    run("make clean") if $REBUILD;
     run("make");
     touch('zz_build');
 }
