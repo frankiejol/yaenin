@@ -23,7 +23,7 @@ http://pastebin.com/hdEY4Fbu
 
 Paste it in a file, review it and do:
 
-  $ cat packages.txt | sudo apt-get -y install
+  $ cat packages.txt | sudo xargs apt-get -y install
 
 What is Enlightenment?
 ----------------------
