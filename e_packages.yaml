@@ -6,10 +6,10 @@ uncompress:
   tar.xz: tar xf
 packages:
   libs:
-    - emotion_generic_players
-    - evas_generic_loaders
     - efl
     - elementary
+    - emotion_generic_players
+    - evas_generic_loaders
   apps:
     - enlightenment
     - terminology
