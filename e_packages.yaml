@@ -6,9 +6,9 @@ uncompress:
   tar.xz: tar xf
 packages:
   libs:
+    - efl
     - emotion_generic_players
     - evas_generic_loaders
-    - efl
     - elementary
   apps:
     - enlightenment
