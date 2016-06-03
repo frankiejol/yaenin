@@ -48,6 +48,11 @@ if ($help) {
     exit;
 }
 
+if ($PROFILE && $PROFILE =~/debug/i) {
+    # TODO test this actually works
+    $ENV{CFLAGS}="-O2 -ffast-math -march=native -g -ggdb3";
+}
+
 ############################################################################
 my $CONFIG = YAML::LoadFile($FILE_CONFIG);
 my $UA = new LWP::UserAgent;
@@ -214,14 +219,14 @@ sub build {
 }
 
 sub make_uninstall {
-    run("sudo make uninstall",1);
+    run("make uninstall",1);
     unlink("zz_install");
 }
 
 sub make_install {
     return if -e "zz_install"   && !$FORCE && !$REINSTALL;
-    run("sudo make install");
-    run("sudo ldconfig");
+    run("make install");
+    run("ldconfig");
     touch('zz_install');
 }
 
@@ -266,6 +271,7 @@ sub uninstall {
 #################################################################
 
 mkdir $DIR_TMP or die "$! $DIR_TMP" if ! -e $DIR_TMP;
+umask('0022');
 if ($UNINSTALL) {
     uninstall();
     exit;
