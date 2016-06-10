@@ -16,10 +16,23 @@ my $FILE_CONFIG = "e_packages.yaml";
 my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
 my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL, $REBUILD);
+my $WAYLAND;
 my $PREFIX = "/usr/local";
 
 my $WGET = `which wget`;
 chomp $WGET;
+
+my %WAYLAND_FLAGS = (
+    efl => ['--enable-egl','--with-opengl=es','--enable-drm','--enable-gl-drm']
+    ,enlightenment => ['–enable-wayland-clients','–enable-wayland-egl']
+);
+
+my ($me) = $0 =~ m{.*/(.*)};
+$me = $0 if !defined $me;
+my $FILE_LOG_FLAGS = "$me.log";
+my $FLAGS_CHANGED;
+
+flags_changed();
 ############################################################################
 
 my $help;
@@ -33,6 +46,7 @@ GetOptions ( help => \$help
             ,reinstall => \$REINSTALL
             ,profile => \$PROFILE
             ,uninstall => \$UNINSTALL
+            ,wayland => \$WAYLAND
             ,"download-only" => \$DOWNLOAD_ONLY
 );
 
@@ -186,10 +200,53 @@ sub file_dir {
     return $dir;
 }
 
+sub flags_changed {
+    return $FLAGS_CHANGED if defined $FLAGS_CHANGED;
+
+    my $old_flags = load_log_flags();
+    my $flags = join ("\n",@ARGV);
+    if (!defined $old_flags || $flags ne $old_flags) {
+        save_log_flags($flags);
+        $FLAGS_CHANGED = 1;
+    } else {
+        $FLAGS_CHANGED = 0;
+    }
+    return $FLAGS_CHANGED;
+}
+
+sub load_log_flags {
+    open my $in ,'<', $FILE_LOG_FLAGS or return;
+    return join('',<$in>);
+}
+
+sub save_log_flags {
+    my $flags = shift;
+
+    open my $out,'>',$FILE_LOG_FLAGS or die "$! $FILE_LOG_FLAGS";
+    print $out $flags;
+    close $out;
+}
+
+sub wayland_flags {
+    my $pkg = shift;
+    my $wayland_flags = $WAYLAND_FLAGS{$pkg};
+    if (!$wayland_flags) {
+        warn "WARNING: no wayland flags for $pkg\n";
+        $wayland_flags = [];
+    }
+    push @$wayland_flags,('--enable-wayland');
+    return @$wayland_flags;
+}
+
 sub configure {
-    return if -e "Makefile"     && !$FORCE && !$REBUILD;
+    my $pkg = shift;
+
+    return if -e "Makefile"     && !$FORCE && !$REBUILD && !flags_changed();
     my @cmd =("./configure","--prefix",$PREFIX);
     push @cmd,("--profile=$PROFILE") if $PROFILE;
+    push @cmd,wayland_flags($pkg)    if $WAYLAND;
+    warn join(" ",@cmd);
+    sleep 1;
     run(@cmd);
 }
 
@@ -232,9 +289,11 @@ sub make_install {
 
 sub build_install {
     my $dir = shift;
+    my $pkg = shift;
+
     my $cwd = getcwd();
     chdir $dir or die "I can't chdir $dir";
-    configure();
+    configure($pkg);
     build();
     make_install();
     chdir $cwd or die "I can't chdir $cwd";
@@ -252,7 +311,7 @@ sub install_package {
     my $dir = $DIR_TMP."/".file_dir($last_release);
     uncompress($last_release) if ! -e $dir;
 
-    build_install($dir) if !$TEST;
+    build_install($dir,$pkg) if !$TEST;
 
     unlink("$DIR_TMP/$pkg.html") or die "$! $DIR_TMP/$pkg.html";
 }
