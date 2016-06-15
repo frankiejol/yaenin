@@ -17,6 +17,7 @@ my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
 my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL, $REBUILD);
 my $PREFIX = "/usr/local";
+my $WAYLAND;
 
 my $WGET = `which wget`;
 chomp $WGET;
@@ -34,6 +35,7 @@ GetOptions ( help => \$help
             ,profile => \$PROFILE
             ,uninstall => \$UNINSTALL
             ,"download-only" => \$DOWNLOAD_ONLY
+            ,wayland => \$WAYLAND
 );
 
 if ($help) {
@@ -185,6 +187,7 @@ sub configure {
     return if -e "Makefile"     && !$FORCE && !$REBUILD;
     my @cmd =("./configure","--prefix",$PREFIX);
     push @cmd,("--profile=$PROFILE") if $PROFILE;
+    push @cmd,("--enable-wayland")   if $WAYLAND;
     run(@cmd);
 }
 
