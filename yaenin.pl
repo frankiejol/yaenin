@@ -18,7 +18,6 @@ my $DEBUG = 0;
 my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL, $REBUILD);
 my $WAYLAND;
 my $PREFIX = "/usr/local";
-my $WAYLAND;
 
 my $WGET = `which wget`;
 chomp $WGET;
