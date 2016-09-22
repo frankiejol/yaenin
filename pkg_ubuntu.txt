@@ -57,3 +57,6 @@ libspectre-dev
 libxtst-dev
 libibus-1.0-dev
 libpam-dev
+libyaml-perl
+libpoppler-cpp-dev
+librsvg2-dev
