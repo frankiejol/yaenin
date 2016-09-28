@@ -7,7 +7,7 @@ libfreetype6-dev
 libpng12-dev
 libfribidi-dev
 libgles2-mesa-dev
-libjpeg8-dev
+libjpeg62-turbo-dev
 libtiff5-dev
 libgif-dev
 libxext-dev
@@ -28,7 +28,7 @@ libsndfile-dev
 libxcursor-dev
 libxp-dev
 libxcb-xprint0-dev
-libxine-dev
+libxine2-dev
 libvlc-dev
 libwebp-dev
 libbullet-dev
