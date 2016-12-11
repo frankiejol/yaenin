@@ -329,7 +329,7 @@ sub uninstall {
 #################################################################
 
 mkdir $DIR_TMP or die "$! $DIR_TMP" if ! -e $DIR_TMP;
-umask('0222');
+umask('0002');
 if ($UNINSTALL) {
     uninstall();
     exit;
