@@ -326,6 +326,31 @@ sub uninstall {
     closedir $ls;
 }
 
+sub install_other {
+    my $pkg = shift;
+    my $config = shift;
+
+    my $url = $config->{url};
+    my $release = $config->{release};
+
+    download_file("$url/$release", "$DIR_TMP/$release");
+    return if $DOWNLOAD_ONLY;
+
+    my $dir = $DIR_TMP."/".file_dir($release);
+    uncompress($release) if ! -e $dir;
+
+    build_install($dir,$pkg) if !$TEST;
+
+}
+
+sub install_other_packages {
+    warn Dumper($CONFIG);
+    for my $pkg (sort keys %{$CONFIG->{other_packages}}) {
+        warn $pkg;
+        install_other($pkg, $CONFIG->{other_packages}->{$pkg});
+    }
+}
+
 #################################################################
 
 mkdir $DIR_TMP or die "$! $DIR_TMP" if ! -e $DIR_TMP;
@@ -341,3 +366,4 @@ for my $type (reverse sort keys %{$CONFIG->{packages}}) {
         install_package($type,$pkg);
     }
 }
+install_other_packages();
