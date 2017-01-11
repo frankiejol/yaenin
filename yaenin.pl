@@ -344,7 +344,6 @@ sub install_other {
 }
 
 sub install_other_packages {
-    warn Dumper($CONFIG);
     for my $pkg (sort keys %{$CONFIG->{other_packages}}) {
         warn $pkg;
         install_other($pkg, $CONFIG->{other_packages}->{$pkg});
