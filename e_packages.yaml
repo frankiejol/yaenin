@@ -16,3 +16,7 @@ other_packages:
     ephoto:
         url: http://www.smhouston.us/stuff/
         release: ephoto-1.0-beta2.tar.gz
+    extra:
+        url: http://devs.enlightenment.org/~bu5hm4n/extra/
+        release: extra-0.0.1-beta.tar.gz
+        dir: extra-0.0.1
