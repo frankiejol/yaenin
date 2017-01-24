@@ -205,7 +205,12 @@ sub flags_changed {
     return $FLAGS_CHANGED if defined $FLAGS_CHANGED;
 
     my $old_flags = load_log_flags();
-    my $flags = join ("\n",@ARGV);
+
+    my @argv;
+    for (@ARGV) {
+        push @argv,($_) if !/debug/;
+    }
+    my $flags = join ("\n",@argv);
     if (!defined $old_flags || $flags ne $old_flags) {
         save_log_flags($flags);
         $FLAGS_CHANGED = 1;
@@ -291,7 +296,7 @@ sub build_install {
     my $pkg = shift;
 
     my $cwd = getcwd();
-    chdir $dir or die "I can't chdir $dir";
+    chdir $dir or die "I can't chdir $dir from $cwd";
     configure($pkg);
     build();
     make_install();
@@ -336,7 +341,13 @@ sub install_other {
     download_file("$url/$release", "$DIR_TMP/$release");
     return if $DOWNLOAD_ONLY;
 
-    my $dir = $DIR_TMP."/".file_dir($release);
+    my $dir = $config->{dir};
+    if ($dir ) {
+        $dir ="tmp/$dir";
+    } else {
+        $dir = $DIR_TMP."/".file_dir($release);
+    }
+
     uncompress($release) if ! -e $dir;
 
     build_install($dir,$pkg) if !$TEST;
