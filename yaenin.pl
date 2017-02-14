@@ -49,7 +49,7 @@ GetOptions ( help => \$help
             ,wayland => \$WAYLAND
             ,"download-only" => \$DOWNLOAD_ONLY
             ,wayland => \$WAYLAND
-);
+) or exit;
 
 if ($help) {
     print "$0 [--help] [--debug] [--alpha] [--force] [--profile=dev|debug|?]\n"
@@ -356,7 +356,6 @@ sub install_other {
 
 sub install_other_packages {
     for my $pkg (sort keys %{$CONFIG->{other_packages}}) {
-        warn $pkg;
         install_other($pkg, $CONFIG->{other_packages}->{$pkg});
     }
 }
