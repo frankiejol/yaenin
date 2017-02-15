@@ -55,3 +55,4 @@ libpam0g-dev
 libyaml-perl
 libpoppler-cpp-dev
 librsvg2-dev
+libsystemd-dev
