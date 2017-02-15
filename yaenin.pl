@@ -17,7 +17,7 @@ my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
 my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL, $REBUILD);
 my $WAYLAND;
-my $PREFIX = "/usr/local";
+my $PREFIX = "/opt";
 
 my $WGET = `which wget`;
 chomp $WGET;
@@ -251,14 +251,18 @@ sub configure {
     my @cmd =("./configure","--prefix",$PREFIX);
     push @cmd,("--profile=$PROFILE") if $PROFILE;
     push @cmd,("--enable-wayland")   if $WAYLAND;
-    run(@cmd);
+    run(\@cmd);
 }
 
 sub run {
-    my $cmd = shift or die "run command";
+    my $cmd = shift;
     my $dont_die = shift;
 
-    open my $run,'-|',$cmd or die $!;
+    if (!ref $cmd) {
+        $cmd = [$cmd];
+    }
+
+    open my $run,'-|',join(" ",@$cmd) or die $!;
     while (<$run>) {
         print;
     }
