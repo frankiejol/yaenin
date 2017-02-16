@@ -17,7 +17,7 @@ my $DIR_TMP = getcwd."/tmp";
 my $DEBUG = 0;
 my ($FORCE , $ALPHA, $BETA, $TEST, $REINSTALL, $PROFILE, $DOWNLOAD_ONLY, $UNINSTALL, $REBUILD);
 my $WAYLAND;
-my $PREFIX = "/opt";
+my $PREFIX = "/usr/local";
 
 my $WGET = `which wget`;
 chomp $WGET;
@@ -49,6 +49,7 @@ GetOptions ( help => \$help
             ,wayland => \$WAYLAND
             ,"download-only" => \$DOWNLOAD_ONLY
             ,wayland => \$WAYLAND
+            ,'prefix=s' => \$PREFIX
 ) or exit;
 
 if ($help) {
@@ -72,6 +73,9 @@ if ($PROFILE && $PROFILE =~/debug/i) {
 my $CONFIG = YAML::LoadFile($FILE_CONFIG);
 my $UA = new LWP::UserAgent;
 my %UNCOMPRESS = %{$CONFIG->{uncompress}};
+
+$ENV{LDFLAGS}="-L$PREFIX/lib";
+$ENV{CPPFLAGS}="-I$PREFIX/include";
 
 mkdir $DIR_TMP or die "$! mkdir $DIR_TMP" if ! -e $DIR_TMP;
 #
@@ -258,11 +262,11 @@ sub run {
     my $cmd = shift;
     my $dont_die = shift;
 
-    if (!ref $cmd) {
-        $cmd = [$cmd];
+    if (ref $cmd) {
+        $cmd = join(" ",@$cmd);
     }
 
-    open my $run,'-|',join(" ",@$cmd) or die $!;
+    open my $run,'-|',$cmd or die $!;
     while (<$run>) {
         print;
     }
