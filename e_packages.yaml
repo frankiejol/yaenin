@@ -10,9 +10,17 @@ packages:
   apps:
     - enlightenment
     - terminology
+    - ephoto
+#    - edi
+#    - eflete
+#    - empc
+#    - enventor
+#    - epour
+#    - espionage
+#    - evisum
+    - extra
     - rage
     - econnman
-    - extra
 other_packages:
     ephoto:
         url: http://www.smhouston.us/stuff/
