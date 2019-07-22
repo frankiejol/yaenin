@@ -48,7 +48,6 @@ GetOptions ( help => \$help
             ,uninstall => \$UNINSTALL
             ,wayland => \$WAYLAND
             ,"download-only" => \$DOWNLOAD_ONLY
-            ,wayland => \$WAYLAND
             ,'prefix=s' => \$PREFIX
 ) or exit;
 
@@ -153,10 +152,12 @@ sub parse {
     while (<$html>) {
         next if ! /$package/;
         print if $DEBUG;
-        my ($release) = /a href="$package-(\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
+        #        my ($release) = /a href="$package-(\d.*?)".*?(\d+\-\w+-\d{4} \d\d\:\d\d)/;
+        my ($release) = /a href="$package-(.*?\.tar\.\w+)"/;
         next if !$release;
         next if !$BETA && $release =~ /beta/;
         next if !$ALPHA && $release =~ /alpha/;
+        warn "$release\n" if $DEBUG;
         my ($ext) = $release =~ m{(tar\..*)};
         next if !$UNCOMPRESS{$ext};
         print "$release\n" if $DEBUG;
@@ -248,6 +249,14 @@ sub wayland_flags {
     return @$wayland_flags;
 }
 
+sub autogen {
+    my $pkg = shift;
+    return if -e "configure"     && !$FORCE && !$REBUILD && !flags_changed();
+    return if -e "build";
+    my @cmd = ("./autogen.sh");
+    run(\@cmd);
+}
+
 sub configure {
     my $pkg = shift;
 
@@ -305,6 +314,13 @@ sub build_install {
 
     my $cwd = getcwd();
     chdir $dir or die "I can't chdir $dir from $cwd";
+    if (! -e "configure") {
+        autogen($pkg);
+        chdir("build") or die "Error: No build dir found";
+        run("ninja");
+        run("ninja","install");
+        return;
+    }
     configure($pkg);
     build();
     make_install();
