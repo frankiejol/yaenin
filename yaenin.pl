@@ -260,6 +260,8 @@ sub autogen {
 sub configure {
     my $pkg = shift;
 
+    autogen($pkg) if -e "autogen.sh";
+
     return if -e "Makefile"     && !$FORCE && !$REBUILD && !flags_changed();
     my @cmd =("./configure","--prefix",$PREFIX);
     push @cmd,("--profile=$PROFILE") if $PROFILE;
@@ -314,11 +316,17 @@ sub build_install {
 
     my $cwd = getcwd();
     chdir $dir or die "I can't chdir $dir from $cwd";
-    if (! -e "configure") {
-        autogen($pkg);
-        chdir("build") or die "Error: No build dir found";
-        run("ninja");
-        run("ninja","install");
+    print "$dir\n";
+    if (-e "meson") {
+        if ( ! -e "zz_build") {
+            run("meson . build");
+            run("ninja -C build");
+            touch("zz_build");
+        }
+        if ( ! -e "zz_install") {
+            run("sudo ninja -C build install");
+            touch("zz_install");
+        }
         return;
     }
     configure($pkg);
