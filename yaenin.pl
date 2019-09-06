@@ -299,14 +299,14 @@ sub build {
 }
 
 sub make_uninstall {
-    run("make uninstall",1);
+    run("sudo make uninstall",1);
     unlink("zz_install");
 }
 
 sub make_install {
     return if -e "zz_install"   && !$FORCE && !$REINSTALL;
-    run("make install");
-    run("ldconfig");
+    run("sudo make install");
+    run("sudo ldconfig");
     touch('zz_install');
 }
 
