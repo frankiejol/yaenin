@@ -3,6 +3,7 @@
 use warnings;
 use strict;
 
+use Carp qw(confess);
 use Data::Dumper;
 use Version::Compare;# qw(version_compare);
 use Cwd;
@@ -261,8 +262,10 @@ sub configure {
     my $pkg = shift;
 
     autogen($pkg) if -e "autogen.sh";
+    return if $pkg eq 'evisum';
 
-    return if -e "Makefile"     && !$FORCE && !$REBUILD && !flags_changed();
+    return if -e ("Makefile" || -e "makefile")
+        && !$FORCE && !$REBUILD && !flags_changed();
     my @cmd =("./configure","--prefix",$PREFIX);
     push @cmd,("--profile=$PROFILE") if $PROFILE;
     push @cmd,("--enable-wayland")   if $WAYLAND;
@@ -277,7 +280,7 @@ sub run {
         $cmd = join(" ",@$cmd);
     }
 
-    open my $run,'-|',$cmd or die $!;
+    open my $run,'-|',$cmd or confess $!;
     while (<$run>) {
         print;
     }
@@ -328,6 +331,8 @@ sub build_install {
             touch("zz_install");
         }
         return;
+    } elsif ( -e 'setup.py') {
+        run('sudo ./setup.py install');
     }
     configure($pkg);
     build();

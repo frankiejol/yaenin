@@ -9,19 +9,19 @@ packages:
     - efl
   apps:
     - enlightenment
-    - terminology
-    - ephoto
-#    - edi
-#    - eflete
+    - econnman
+#    - ecrire
 #    - empc
-#    - enventor
+    - ephoto
 #    - epour
-#    - espionage
-#    - evisum
+#    - equate
+#    - eruler
+    - evisum
+#    - express
     - extra
     - rage
-    - econnman
+    - terminology
 other_packages:
-    ephoto:
-        url: http://www.smhouston.us/stuff/
-        release: ephoto-1.0-beta2.tar.gz
+#    ephoto:
+#        url: http://www.smhouston.us/stuff/
+#        release: ephoto-1.0-beta2.tar.gz
