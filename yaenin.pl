@@ -317,7 +317,7 @@ sub build_install {
     my $cwd = getcwd();
     chdir $dir or die "I can't chdir $dir from $cwd";
     print "$dir\n";
-    if (-e "meson") {
+    if (-e "meson" || -e 'meson.build') {
         if ( ! -e "zz_build") {
             run("meson . build");
             run("ninja -C build");
